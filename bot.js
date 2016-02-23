@@ -66,13 +66,16 @@ This bot demonstrates many of the core features of Botkit:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 
+
 if (!process.env.token) {
     console.log('Error: Specify token in environment');
     process.exit(1);
 }
 
+
 var Botkit = require('./lib/Botkit.js');
 var os = require('os');
+var weather = require('./weather/lib/weather.js');
 
 var controller = Botkit.slackbot({
     debug: true,
@@ -207,6 +210,18 @@ controller.hears(['uptime','identify yourself','who are you','what is your name'
     var uptime = formatUptime(process.uptime());
 
     bot.reply(message,':robot_face: I am a bot named <@' + bot.identity.name + '>. I have been running for ' + uptime + ' on ' + hostname + '.');
+
+});
+
+
+controller.hears(['How is the weather in (.*)'], 'direct_message,direct_mention,mention',function(bot, message) {
+    var words = message.text.split(" ");
+    var city = words[words.length - 1];
+    weather.find({search: city, degreeType: 'F'}, function(err, result) {
+        if(err) console.log(err);
+        //console.log(JSON.stringify(result, null, 2));
+        bot.reply(message, JSON.stringify(result, null, 2));
+    });
 
 });
 
